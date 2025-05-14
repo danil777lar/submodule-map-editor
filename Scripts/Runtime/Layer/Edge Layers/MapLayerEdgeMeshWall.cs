@@ -14,7 +14,7 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
     [SerializeField] private float wallWidth = 0.25f;
     
     [SerializeField] private int subwallCount = 1;
-    [SerializeField] private List<SubwallConfig> subwalls;
+    [SerializeField] private List<SubwallConfig> subwalls = new List<SubwallConfig>();
     [SerializeField] private List<Tool> _tools;
 
     public override float Height => wallHeight;
