@@ -36,16 +36,33 @@ public class TilePrefab : MonoBehaviour
             }
         }
 
+        if (Models != null)
+        {
+            foreach (ModelVariant model in Models)
+            {
+                model.Model.SetActive(model == selectedModel);
+            }
+        }
+    }
+
+    private void OnValidate()
+    {
         foreach (ModelVariant model in Models)
         {
-            model.Model.SetActive(model == selectedModel);
+            model.Validate();
         }
     }
 
     [Serializable]
     private class ModelVariant
     {
+        [HideInInspector, SerializeField] public string inspectorName;
         [field: SerializeField] public GameObject Model { get; private set; }
         [field: SerializeField] public float Weight { get; private set; }
+
+        public void Validate()
+        {
+            inspectorName = Model != null ? Model.name : "None";
+        }
     }
 }

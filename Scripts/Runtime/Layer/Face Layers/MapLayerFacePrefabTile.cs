@@ -14,6 +14,7 @@ using Object = UnityEngine.Object;
 [Serializable]
 public class MapLayerFacePrefabTile : MapLayerFace
 {
+    [SerializeField] private float verticalScale = 1f;
     [SerializeField] private bool bake;
     [SerializeField] private bool lookBackward;
     [SerializeField] private TilePrefab tilePrefab;
@@ -25,6 +26,8 @@ public class MapLayerFacePrefabTile : MapLayerFace
         base.DrawEditorGUI();
         
         DrawEditorGUIHeader("Tile Settings");
+        DrawEditorGUILine(() => 
+            verticalScale = EditorGUILayout.FloatField("Vertical Scale", verticalScale));
         DrawEditorGUILine(() => 
             bake = EditorGUILayout.Toggle("Bake", bake));
         DrawEditorGUILine(() => 
@@ -75,9 +78,11 @@ public class MapLayerFacePrefabTile : MapLayerFace
             Vector3 tileFrom = TileToLocal(tile.From);
             Vector3 tileTo = TileToLocal(tile.To);
 
-            tileObject.transform.localScale *= Vector3.Distance(tileFrom, tileTo)
-                                               / Vector3.Distance(tileObject.From.position, tileObject.To.position);
-
+            Vector3 scale = tileObject.transform.localScale;
+            scale *= Vector3.Distance(tileFrom, tileTo) / Vector3.Distance(tileObject.From.position, tileObject.To.position);
+            scale = new Vector3(scale.x, scale.y * verticalScale, scale.z);
+            tileObject.transform.localScale = scale;
+            
             if (lookBackward)
             {
                 tileObject.transform.localScale = tileObject.transform.localScale
