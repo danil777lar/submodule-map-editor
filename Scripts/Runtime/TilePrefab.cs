@@ -2,31 +2,48 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = System.Random;
 
 public class TilePrefab : MonoBehaviour
 {
     [field: SerializeField] public Transform From;
     [field: SerializeField] public Transform To;
     [Space]
-    [SerializeField] private List<ModelVariant> Models = new List<ModelVariant>();
+    [SerializeField] private List<ModelGroup> ModelGroups = new List<ModelGroup>();
 
     public void Initialize()
     {
-        if (Models.Count == 0)
+        foreach (var group in ModelGroups)
         {
-            //Debug.LogError("No models to spawn");
+            InitializeGroup(group);
+        }
+    }
+
+    private void InitializeGroup(ModelGroup group)
+    {
+        if (group.Models.Count == 0)
+        {
+            return;
+        }
+
+        if (UnityEngine.Random.Range(0f, 1f) > group.SpawnChance)
+        {
+            foreach (ModelVariant model in group.Models)
+            {
+                model.Model.SetActive(false);
+            }
             return;
         }
 
         float totalWeight = 0;
-        foreach (ModelVariant model in Models)
+        foreach (ModelVariant model in group.Models)
         {
             totalWeight += model.Weight;
         }
 
         ModelVariant selectedModel = null;
         float random = UnityEngine.Random.Range(0, totalWeight);
-        foreach (ModelVariant model in Models)
+        foreach (ModelVariant model in group.Models)
         {
             random -= model.Weight;
             if (random <= 0)
@@ -36,23 +53,30 @@ public class TilePrefab : MonoBehaviour
             }
         }
 
-        if (Models != null)
+        foreach (ModelVariant model in group.Models)
         {
-            foreach (ModelVariant model in Models)
-            {
-                model.Model.SetActive(model == selectedModel);
-            }
+            model.Model.SetActive(model == selectedModel);
         }
     }
 
     private void OnValidate()
     {
-        foreach (ModelVariant model in Models)
+        foreach (var group in ModelGroups)
         {
-            model.Validate();
+            foreach (ModelVariant model in group.Models)
+            {
+                model.Validate();
+            }   
         }
     }
 
+    [Serializable]
+    private class ModelGroup
+    {
+        [field: SerializeField, Range(0f, 1f)] public float SpawnChance { get; private set; } = 1f;
+        [field: SerializeField] public List<ModelVariant> Models { get; private set; } = new List<ModelVariant>();
+    }
+    
     [Serializable]
     private class ModelVariant
     {
