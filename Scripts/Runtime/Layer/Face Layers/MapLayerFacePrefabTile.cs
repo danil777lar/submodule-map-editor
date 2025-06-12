@@ -132,6 +132,9 @@ public class MapLayerFacePrefabTile : MapLayerFace
             Mesh mesh = result.GetComponent<MeshFilter>().sharedMesh;
             SaveMesh(mesh);
 
+            MeshCollider collider = result.AddComponent<MeshCollider>();
+            collider.sharedMesh = mesh;
+
             return result.gameObject;
         }
 
