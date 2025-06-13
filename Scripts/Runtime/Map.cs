@@ -12,6 +12,8 @@ public class Map : MonoBehaviour
 
     public void Build()
     {
+        gameObject.isStatic = true;
+        
         List<Map> mapsToRebuild = new List<Map>();
         List<GameObject> objectsToDestroy = new List<GameObject>();
         foreach (Transform child in transform)

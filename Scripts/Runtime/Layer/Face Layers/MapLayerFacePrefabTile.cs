@@ -18,6 +18,9 @@ public class MapLayerFacePrefabTile : MapLayerFace
     [SerializeField] private bool bake;
     [SerializeField] private bool lookBackward;
     [SerializeField] private TilePrefab tilePrefab;
+    [Space]
+    [SerializeField] private bool useVertexColor;
+    [SerializeField] private VerticalGradientVertexColorer vertexColorer = new VerticalGradientVertexColorer();
     
     [SerializeField] private List<Tool> tools;
 
@@ -34,7 +37,22 @@ public class MapLayerFacePrefabTile : MapLayerFace
             lookBackward = EditorGUILayout.Toggle("Look Backward", lookBackward));
         DrawEditorGUILine(() => 
             tilePrefab = (TilePrefab) EditorGUILayout.ObjectField("Tile Prefab", tilePrefab, typeof(TilePrefab), false));
-        
+
+        if (bake)
+        {
+            EditorGUILayout.Space();
+            DrawEditorGUIHeader("Tile Vertex Color");
+            DrawEditorGUILine(() =>
+                useVertexColor = EditorGUILayout.Toggle("Use Vertex Color", useVertexColor));
+            if (useVertexColor)
+            {
+                foreach (Action line in vertexColorer.GetEditorGUIProperties())
+                {
+                    DrawEditorGUILine(() => line.Invoke());
+                }
+            }
+        }
+
         EditorGUILayout.Space(20f);
     }
 
@@ -60,7 +78,17 @@ public class MapLayerFacePrefabTile : MapLayerFace
         List<MeshRenderer> meshes = SpawnTiles(root.transform);
         if (bake)
         {
-            root = Bake(root, meshes.Select(x => x.gameObject).ToList());
+            
+            Quaternion rotation = transform.rotation;
+            transform.rotation = Quaternion.identity;
+            
+            root = Bake(root, meshes.Select(x => x.gameObject).ToList(), out Mesh mesh);
+            transform.rotation = rotation;
+            
+            if (useVertexColor)
+            {
+                vertexColorer.ColorMesh(mesh);
+            }
         }
 
         root.isStatic = true;
@@ -102,9 +130,14 @@ public class MapLayerFacePrefabTile : MapLayerFace
         return meshRenderers;
     }
 
-    private GameObject Bake(GameObject root, List<GameObject> objectsToBake)
+    private GameObject Bake(GameObject root, List<GameObject> objectsToBake, out Mesh outMesh)
     {
         MB3_MeshBaker baker = new GameObject("Baker").AddComponent<MB3_MeshBaker>();
+        
+        baker.transform.position = root.transform.position;
+        baker.transform.rotation = root.transform.rotation;
+        
+        outMesh = null;
         
         baker.ClearMesh();
         baker.meshCombiner.renderType = MB_RenderType.meshRenderer;
@@ -119,6 +152,8 @@ public class MapLayerFacePrefabTile : MapLayerFace
         if (objectsToBake.Count > 0)
         {
             baker.AddDeleteGameObjects(objectsToBake.ToArray(), null, true);
+            baker.meshCombiner.pivotLocationType = MB_MeshPivotLocation.customLocation;
+            baker.meshCombiner.pivotLocation = root.transform.position;
             baker.Apply();
             
             MeshRenderer result = (MeshRenderer)baker.meshCombiner.targetRenderer;
@@ -136,8 +171,10 @@ public class MapLayerFacePrefabTile : MapLayerFace
 
             Mesh mesh = result.GetComponent<MeshFilter>().sharedMesh;
             SaveMesh(mesh);
+            outMesh = mesh;
 
             MeshCollider collider = result.AddComponent<MeshCollider>();
+            collider.convex = true;
             collider.sharedMesh = mesh;
 
             return result.gameObject;
