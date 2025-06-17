@@ -17,6 +17,7 @@ public class MapLayerFacePrefabTile : MapLayerFace
     [SerializeField] private float verticalScale = 1f;
     [SerializeField] private bool bake;
     [SerializeField] private bool lookBackward;
+    [SerializeField] private bool convexCollider = false;
     [SerializeField] private TilePrefab tilePrefab;
     [Space]
     [SerializeField] private bool useVertexColor;
@@ -35,6 +36,8 @@ public class MapLayerFacePrefabTile : MapLayerFace
             bake = EditorGUILayout.Toggle("Bake", bake));
         DrawEditorGUILine(() => 
             lookBackward = EditorGUILayout.Toggle("Look Backward", lookBackward));
+        DrawEditorGUILine(() => 
+            convexCollider = EditorGUILayout.Toggle("Convex Coliider", convexCollider));
         DrawEditorGUILine(() => 
             tilePrefab = (TilePrefab) EditorGUILayout.ObjectField("Tile Prefab", tilePrefab, typeof(TilePrefab), false));
 
@@ -174,7 +177,7 @@ public class MapLayerFacePrefabTile : MapLayerFace
             outMesh = mesh;
 
             MeshCollider collider = result.AddComponent<MeshCollider>();
-            collider.convex = true;
+            collider.convex = convexCollider;
             collider.sharedMesh = mesh;
 
             return result.gameObject;
