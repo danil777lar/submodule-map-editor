@@ -15,9 +15,13 @@ using Object = UnityEngine.Object;
 public class MapLayerFacePrefabTile : MapLayerFace
 {
     [SerializeField] private float verticalScale = 1f;
+    
     [SerializeField] private bool bake;
-    [SerializeField] private bool lookBackward;
+    [SerializeField] private bool optimizeMesh = false;
     [SerializeField] private bool convexCollider = false;
+    [SerializeField] private float uvScale = 1f;
+    
+    [SerializeField] private bool lookBackward;
     [SerializeField] private TilePrefab tilePrefab;
     [Space]
     [SerializeField] private bool useVertexColor;
@@ -29,17 +33,24 @@ public class MapLayerFacePrefabTile : MapLayerFace
     {
         base.DrawEditorGUI();
         
-        DrawEditorGUIHeader("Tile Settings");
+        DrawEditorGUIHeader("Tile Base");
         DrawEditorGUILine(() => 
             verticalScale = EditorGUILayout.FloatField("Vertical Scale", verticalScale));
-        DrawEditorGUILine(() => 
-            bake = EditorGUILayout.Toggle("Bake", bake));
+        
         DrawEditorGUILine(() => 
             lookBackward = EditorGUILayout.Toggle("Look Backward", lookBackward));
         DrawEditorGUILine(() => 
-            convexCollider = EditorGUILayout.Toggle("Convex Coliider", convexCollider));
-        DrawEditorGUILine(() => 
             tilePrefab = (TilePrefab) EditorGUILayout.ObjectField("Tile Prefab", tilePrefab, typeof(TilePrefab), false));
+        
+        EditorGUILayout.Space();
+        DrawEditorGUIHeader("Tile Bake");
+        DrawEditorGUILine(() => bake = EditorGUILayout.Toggle("Bake", bake));
+        if (bake)
+        {
+            DrawEditorGUILine(() => optimizeMesh = EditorGUILayout.Toggle("Optimize Mesh", optimizeMesh));
+            DrawEditorGUILine(() => convexCollider = EditorGUILayout.Toggle("Convex Collider", convexCollider));
+            DrawEditorGUILine(() => uvScale = EditorGUILayout.FloatField("UV Scale", uvScale));
+        }
 
         if (bake)
         {
@@ -157,6 +168,7 @@ public class MapLayerFacePrefabTile : MapLayerFace
             baker.AddDeleteGameObjects(objectsToBake.ToArray(), null, true);
             baker.meshCombiner.pivotLocationType = MB_MeshPivotLocation.customLocation;
             baker.meshCombiner.pivotLocation = root.transform.position;
+            baker.meshCombiner.optimizeAfterBake = optimizeMesh;
             baker.Apply();
             
             MeshRenderer result = (MeshRenderer)baker.meshCombiner.targetRenderer;
@@ -173,6 +185,14 @@ public class MapLayerFacePrefabTile : MapLayerFace
             Object.DestroyImmediate(root);
 
             Mesh mesh = result.GetComponent<MeshFilter>().sharedMesh;
+            
+            Vector2[] uv = mesh.uv;
+            for (int i = 0; i < uv.Length; i++)
+            {
+                uv[i] *= uvScale;
+            }
+            mesh.uv = uv;
+            
             SaveMesh(mesh);
             outMesh = mesh;
 
