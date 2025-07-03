@@ -2,8 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -21,18 +19,20 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
 
     public override void DrawEditorGUI()
     {
+        #if UNITY_EDITOR
+        
         base.DrawEditorGUI();
 
         DrawEditorGUIHeader("Wall Settings");
         DrawEditorGUILine(() =>
-            wallHeight = EditorGUILayout.FloatField("Wall Height", wallHeight));
+            wallHeight = UnityEditor.EditorGUILayout.FloatField("Wall Height", wallHeight));
         DrawEditorGUILine(() =>
-            wallWidth = EditorGUILayout.FloatField("Wall Width", wallWidth));
+            wallWidth = UnityEditor.EditorGUILayout.FloatField("Wall Width", wallWidth));
 
         DrawEditorGUILine(() => { });
 
         DrawEditorGUILine(() =>
-            subwallCount = Mathf.Max(1, EditorGUILayout.IntField("Subwalls Count", subwallCount)));
+            subwallCount = Mathf.Max(1, UnityEditor.EditorGUILayout.IntField("Subwalls Count", subwallCount)));
 
         while (subwalls.Count > subwallCount)
         {
@@ -47,8 +47,10 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
             }
 
             DrawEditorGUILine(() =>
-                subwalls[i] = (SubwallConfig)EditorGUILayout.ObjectField(subwalls[i], typeof(SubwallConfig), false));
+                subwalls[i] = (SubwallConfig)UnityEditor.EditorGUILayout.ObjectField(subwalls[i], typeof(SubwallConfig), false));
         }
+        
+        #endif
     }
 
     public override IReadOnlyCollection<Tool> GetTools()
@@ -88,6 +90,8 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
 
     private Mesh CreateMesh(List<Material> materials)
     {
+        #if UNITY_EDITOR
+        
         Mesh mesh = new Mesh();
         mesh.name = $"{Name}";
 
@@ -127,9 +131,13 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
 
-        Unwrapping.GenerateSecondaryUVSet(mesh);
+        UnityEditor.Unwrapping.GenerateSecondaryUVSet(mesh);
 
         return mesh;
+        
+        #endif
+
+        return null;
     }
 
     #region Tiles

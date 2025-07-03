@@ -1,12 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using DigitalOpus.MB.Core;
 using MoreMountains.Tools;
 using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
@@ -31,33 +29,35 @@ public class MapLayerFacePrefabTile : MapLayerFace
 
     public override void DrawEditorGUI()
     {
+        #if UNITY_EDITOR
+        
         base.DrawEditorGUI();
         
         DrawEditorGUIHeader("Tile Base");
         DrawEditorGUILine(() => 
-            verticalScale = EditorGUILayout.FloatField("Vertical Scale", verticalScale));
+            verticalScale = UnityEditor.EditorGUILayout.FloatField("Vertical Scale", verticalScale));
         
         DrawEditorGUILine(() => 
-            lookBackward = EditorGUILayout.Toggle("Look Backward", lookBackward));
+            lookBackward = UnityEditor.EditorGUILayout.Toggle("Look Backward", lookBackward));
         DrawEditorGUILine(() => 
-            tilePrefab = (TilePrefab) EditorGUILayout.ObjectField("Tile Prefab", tilePrefab, typeof(TilePrefab), false));
+            tilePrefab = (TilePrefab) UnityEditor.EditorGUILayout.ObjectField("Tile Prefab", tilePrefab, typeof(TilePrefab), false));
         
-        EditorGUILayout.Space();
+        UnityEditor.EditorGUILayout.Space();
         DrawEditorGUIHeader("Tile Bake");
-        DrawEditorGUILine(() => bake = EditorGUILayout.Toggle("Bake", bake));
+        DrawEditorGUILine(() => bake = UnityEditor.EditorGUILayout.Toggle("Bake", bake));
         if (bake)
         {
-            DrawEditorGUILine(() => optimizeMesh = EditorGUILayout.Toggle("Optimize Mesh", optimizeMesh));
-            DrawEditorGUILine(() => convexCollider = EditorGUILayout.Toggle("Convex Collider", convexCollider));
-            DrawEditorGUILine(() => uvScale = EditorGUILayout.FloatField("UV Scale", uvScale));
+            DrawEditorGUILine(() => optimizeMesh = UnityEditor.EditorGUILayout.Toggle("Optimize Mesh", optimizeMesh));
+            DrawEditorGUILine(() => convexCollider = UnityEditor.EditorGUILayout.Toggle("Convex Collider", convexCollider));
+            DrawEditorGUILine(() => uvScale = UnityEditor.EditorGUILayout.FloatField("UV Scale", uvScale));
         }
 
         if (bake)
         {
-            EditorGUILayout.Space();
+            UnityEditor.EditorGUILayout.Space();
             DrawEditorGUIHeader("Tile Vertex Color");
             DrawEditorGUILine(() =>
-                useVertexColor = EditorGUILayout.Toggle("Use Vertex Color", useVertexColor));
+                useVertexColor = UnityEditor.EditorGUILayout.Toggle("Use Vertex Color", useVertexColor));
             if (useVertexColor)
             {
                 foreach (Action line in vertexColorer.GetEditorGUIProperties())
@@ -67,7 +67,9 @@ public class MapLayerFacePrefabTile : MapLayerFace
             }
         }
 
-        EditorGUILayout.Space(20f);
+        UnityEditor.EditorGUILayout.Space(20f);
+        
+        #endif
     }
 
     public override IReadOnlyCollection<Tool> GetTools()

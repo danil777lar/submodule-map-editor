@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 [Serializable]
@@ -20,13 +19,17 @@ public class ToolEraser : ToolDraw
 
     private bool TryRemoveTile(Map map, Tile tile)
     {
+        #if UNITY_EDITOR
+        
         if (map.CurrentLayer.FilledTiles.Contains(tile))
         {
             map.CurrentLayer.FilledTiles.Remove(tile);
-            EditorUtility.SetDirty(map);
+            UnityEditor.EditorUtility.SetDirty(map);
 
             return true;
         }
+        
+        #endif
 
         return false;
     }

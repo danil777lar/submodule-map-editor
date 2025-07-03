@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 [Serializable]
@@ -28,17 +27,21 @@ public class MapLayerFaceMeshPlane : MapLayerFace
 
     public override void DrawEditorGUI()
     {
+        #if UNITY_EDITOR
+        
         base.DrawEditorGUI();
         
         DrawEditorGUIHeader("Plane Settings");
         DrawEditorGUILine(() => 
-            lookBackwards = EditorGUILayout.Toggle("Look Backwards", lookBackwards));
+            lookBackwards = UnityEditor.EditorGUILayout.Toggle("Look Backwards", lookBackwards));
         DrawEditorGUILine(() => 
-            uvScale = EditorGUILayout.Vector2Field("UV Scale", uvScale));
+            uvScale = UnityEditor.EditorGUILayout.Vector2Field("UV Scale", uvScale));
         DrawEditorGUILine(() => 
-            material = EditorGUILayout.ObjectField("Material", material, typeof(Material), false) as Material);
+            material = UnityEditor.EditorGUILayout.ObjectField("Material", material, typeof(Material), false) as Material);
         DrawEditorGUILine(() => 
-            vertexColor = EditorGUILayout.ColorField("Vertex Color", vertexColor));
+            vertexColor = UnityEditor.EditorGUILayout.ColorField("Vertex Color", vertexColor));
+        
+        #endif
     }
 
     public override void Build()
@@ -122,6 +125,8 @@ public class MapLayerFaceMeshPlane : MapLayerFace
     
     private Mesh CreateMesh()
     {
+        #if UNITY_EDITOR
+        
         Mesh mesh = new Mesh();
         mesh.name = $"{Name}";
 
@@ -141,9 +146,13 @@ public class MapLayerFaceMeshPlane : MapLayerFace
         mesh.RecalculateTangents();
         mesh.RecalculateBounds();
 
-        Unwrapping.GenerateSecondaryUVSet(mesh);
+        UnityEditor.Unwrapping.GenerateSecondaryUVSet(mesh);
         
         return mesh;
+        
+        #endif
+
+        return null;
     }
     
     private void CreateTileMesh(Tile tile, List<Vector3> verts, List<int> tris, List<Vector2> uvs)

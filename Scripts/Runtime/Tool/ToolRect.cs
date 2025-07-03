@@ -2,10 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 [Serializable]
 public class ToolRect : Tool
@@ -18,8 +15,12 @@ public class ToolRect : Tool
 
     public override void DrawEditorGUI()
     {
+        #if UNITY_EDITOR
+        
         GUILayout.Label("Rect options");
-        filled = EditorGUILayout.Toggle("Filled", filled);
+        filled = UnityEditor.EditorGUILayout.Toggle("Filled", filled);
+        
+        #endif
     }
 
     public override void Process(Map map)

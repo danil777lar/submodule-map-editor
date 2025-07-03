@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 public abstract class ToolDraw : Tool
@@ -17,8 +16,12 @@ public abstract class ToolDraw : Tool
     
     public override void DrawEditorGUI()
     {
+        #if UNITY_EDITOR
+        
         GUILayout.Label("Options:");
-        radius = Mathf.Max(EditorGUILayout.IntField("Radius", radius), 1);
+        radius = Mathf.Max(UnityEditor.EditorGUILayout.IntField("Radius", radius), 1);
+        
+        #endif
     }
     
     public override void Process(Map map)

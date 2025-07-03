@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 [Serializable]
@@ -11,10 +10,14 @@ public class ToolBrush : ToolDraw
     
     protected override void OnDraw(Map map, Tile tile)
     {
+        #if UNITY_EDITOR
+        
         if (!map.CurrentLayer.FilledTiles.Contains(tile))
         {
             map.CurrentLayer.FilledTiles.Add(tile);
-            EditorUtility.SetDirty(map);
+            UnityEditor.EditorUtility.SetDirty(map);
         }    
+        
+        #endif
     }
 }

@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 
 [Serializable]
 public struct Tile
@@ -39,6 +37,8 @@ public struct Tile
     
     public void Draw(Color color, float height, Func<Vector2, Vector3> tileToWorld)
     {
+        #if UNITY_EDITOR
+        
         Vector2[] verts = GetRectVerts(out Vector2[] vertical);
         Vector3[] worldVerts = new Vector3[verts.Length];
         for (int i = 0; i < verts.Length; i++)
@@ -46,7 +46,7 @@ public struct Tile
             worldVerts[i] = tileToWorld.Invoke(verts[i]);
         }
         
-        Handles.DrawSolidRectangleWithOutline(worldVerts, color, Color.clear);
+        UnityEditor.Handles.DrawSolidRectangleWithOutline(worldVerts, color, Color.clear);
         
         if (height > 0f)
         {
@@ -63,8 +63,10 @@ public struct Tile
                 tileToWorld.Invoke(vertical[0])
             }; 
             
-            Handles.DrawSolidRectangleWithOutline(verticalRect, color, Color.clear);
+            UnityEditor.Handles.DrawSolidRectangleWithOutline(verticalRect, color, Color.clear);
         }
+        
+        #endif
     }
 
     public bool TouchWith(Tile other, out Vector2 selfDirection, out Vector2 otherDirection)
