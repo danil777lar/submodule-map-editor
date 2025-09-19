@@ -169,6 +169,13 @@ public class MapEditor : Editor
         }
         EditorGUILayout.EndHorizontal();
         
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("CLEAR", GUILayout.Width(60)))
+        {
+            _map.ClearLayer(layer);
+        }
+        EditorGUILayout.EndHorizontal();
+        
         
         GUILayout.Space(10f);
         

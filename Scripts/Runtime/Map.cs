@@ -54,4 +54,12 @@ public class Map : MonoBehaviour
             Layers.Remove(layer);
         }
     }
+    
+    public void ClearLayer(MapLayer layer)
+    {
+        if (Layers.Contains(layer))
+        {
+            layer.FilledTiles = new List<Tile>();
+        }
+    }
 }
