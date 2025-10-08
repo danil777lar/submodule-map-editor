@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DigitalOpus.MB.Core;
-using MoreMountains.Tools;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -129,8 +128,9 @@ public class MapLayerFacePrefabTile : MapLayerFace
             
             if (lookBackward)
             {
-                tileObject.transform.localScale = tileObject.transform.localScale
-                    .MMSetY(tileObject.transform.localScale.y * -1);
+                Vector3 newScale = tileObject.transform.localScale;
+                newScale.y = tileObject.transform.localScale.y * -1;
+                tileObject.transform.localScale = newScale;
             }
 
             Vector3 tileObjectFrom = root.InverseTransformPoint(tileObject.From.position);
@@ -177,7 +177,7 @@ public class MapLayerFacePrefabTile : MapLayerFace
             result.gameObject.name = Name;
             result.shadowCastingMode = ShadowCastingMode.On;
             
-            root.transform.MMDestroyAllChildren();
+            root.transform.DestroyAllChildren();
             Object.DestroyImmediate(baker.gameObject);
 
             GameObject defaultParent = result.transform.parent.gameObject;  
