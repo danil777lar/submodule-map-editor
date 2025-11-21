@@ -10,6 +10,7 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
 {
     [SerializeField] private float wallHeight = 3f;
     [SerializeField] private float wallWidth = 0.25f;
+    [SerializeField] private float vertexColorsRefHeight = 3f;
     
     [SerializeField] private int subwallCount = 1;
     [SerializeField] private List<SubwallConfig> subwalls = new List<SubwallConfig>();
@@ -28,6 +29,8 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
             wallHeight = UnityEditor.EditorGUILayout.FloatField("Wall Height", wallHeight));
         DrawEditorGUILine(() =>
             wallWidth = UnityEditor.EditorGUILayout.FloatField("Wall Width", wallWidth));
+        DrawEditorGUILine(() =>
+            vertexColorsRefHeight = UnityEditor.EditorGUILayout.FloatField("Vertex Colors Ref Height", vertexColorsRefHeight));
 
         DrawEditorGUILine(() => { });
 
@@ -355,6 +358,9 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
             GetSubwallPointsAtPercent(from, fromDir, to, toDir, nextPercent, subwall, out Vector3 fromTop,
                 out Vector3 toTop);
 
+            float topColorPercent = Mathf.Clamp01(fromTop.y / vertexColorsRefHeight);
+            float bottomColorPercent = Mathf.Clamp01(fromBottom.y / vertexColorsRefHeight);
+
             PlaneData data = new PlaneData
             {
                 FromBottom = fromBottom,
@@ -362,10 +368,10 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
                 FromTop = fromTop,
                 ToTop = toTop,
                 
-                FromBottomColor = subwall.VertexColorGradient.Evaluate(percent),
-                ToBottomColor = subwall.VertexColorGradient.Evaluate(percent),
-                FromTopColor = subwall.VertexColorGradient.Evaluate(nextPercent),
-                ToTopColor = subwall.VertexColorGradient.Evaluate(nextPercent)
+                FromBottomColor = subwall.VertexColorGradient.Evaluate(bottomColorPercent),
+                ToBottomColor = subwall.VertexColorGradient.Evaluate(bottomColorPercent),
+                FromTopColor = subwall.VertexColorGradient.Evaluate(topColorPercent),
+                ToTopColor = subwall.VertexColorGradient.Evaluate(topColorPercent)
             };
 
             bool smooth = percent > 0f && subwall.SmoothSteps;
