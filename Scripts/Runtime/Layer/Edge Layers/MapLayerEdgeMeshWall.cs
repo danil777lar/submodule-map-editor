@@ -382,13 +382,16 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
     private void GetSubwallPointsAtPercent(Vector3 from, Vector3 fromDir, Vector3 to, Vector3 toDir,
         float percent, SubwallConfig subwall, out Vector3 fromRes, out Vector3 toRes)
     {
-        float height = Mathf.Lerp(subwall.HeightPercentMin, subwall.HeightPercentMax, percent) * wallHeight;
+        float heightBottom = subwall.AnchorBottom * wallHeight + subwall.OffsetBottom;
+        float heightTop = subwall.AnchorTop * wallHeight + subwall.OffsetTop;
+
+        float yPos = Mathf.Lerp(heightBottom, heightTop, percent);
 
         Vector3 fromOffset = fromDir + fromDir.normalized * subwall.WidthCurve.Evaluate(percent);
         Vector3 toOffset = toDir + toDir.normalized * subwall.WidthCurve.Evaluate(percent);
 
-        fromRes = from + fromOffset + Vector3.up * height;
-        toRes = to + toOffset + Vector3.up * height;
+        fromRes = from + fromOffset + Vector3.up * yPos;
+        toRes = to + toOffset + Vector3.up * yPos;
     }
 
     private void CreatePlaneMesh(PlaneData data, bool lookForward, bool smooth, float uvScale, MeshData meshData)

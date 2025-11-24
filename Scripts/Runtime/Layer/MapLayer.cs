@@ -110,7 +110,7 @@ public abstract class MapLayer
         #if UNITY_EDITOR
         Vector3 mousePosition = Event.current.mousePosition;
         Ray ray = UnityEditor.HandleUtility.GUIPointToWorldRay(mousePosition);
-        Plane plane = new Plane(Vector3.up, Vector3.up * VerticalOffset);
+        Plane plane = new Plane(transform.up, transform.position + transform.up * VerticalOffset);
         if (plane.Raycast(ray, out float distance))
         {
             position = ray.GetPoint(distance);

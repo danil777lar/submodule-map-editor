@@ -4,8 +4,11 @@ using UnityEngine;
 public class SubwallConfig : ScriptableObject
 {
     [field: Header("Main")]
-    [field: SerializeField, Range(0f, 1f)] public float HeightPercentMin { get; private set; } = 0f;
-    [field: SerializeField, Range(0f, 1f)] public float HeightPercentMax { get; private set; } = 1f;
+    [field: SerializeField, Range(0f, 1f)] public float AnchorBottom { get; private set; } = 0f;
+    [field: SerializeField, Range(0f, 1f)] public float AnchorTop { get; private set; } = 1f;
+    [field: Space]
+    [field: SerializeField] public float OffsetBottom { get; private set; } = 0f;
+    [field: SerializeField] public float OffsetTop { get; private set; } = 0f;
     [field: Space] 
     [field: SerializeField] public bool SmoothSteps { get; private set; } = true;
     [field: SerializeField, Min(1)] public int Steps { get; private set; } = 1;
