@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Subwall Config", menuName = "Map Editor/Subwall Config")]
+[CreateAssetMenu(fileName = "Subwall Config", menuName = "Larje/Map Editor/Subwall Config")]
 public class SubwallConfig : ScriptableObject
 {
     [field: Header("Main")]
