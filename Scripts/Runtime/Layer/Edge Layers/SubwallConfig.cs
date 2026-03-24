@@ -18,4 +18,12 @@ public class SubwallConfig : ScriptableObject
     [field: SerializeField] public float UVScale { get; private set; } = 1f;
     [field: SerializeField] public Gradient VertexColorGradient { get; private set; } = new Gradient();
     [field: SerializeField] public Material Material { get; private set; }
+
+    [field: Space]
+    [field: SerializeField] public bool DrawTop { get; private set; } = true;
+    [field: SerializeField] public Color TopColor { get; private set; } = Color.white;
+
+    [field: Space]
+    [field: SerializeField] public bool DrawBottom { get; private set; } = true;
+    [field: SerializeField] public Color BottomColor { get; private set; } = Color.white;
 }

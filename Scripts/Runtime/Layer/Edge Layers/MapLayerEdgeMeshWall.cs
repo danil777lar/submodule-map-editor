@@ -330,6 +330,9 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
         CreateSideMesh(subwall, from, perpendicular + fromRight, to, perpendicular + toRight, true, meshData);
         CreateSideMesh(subwall, from, -perpendicular + fromLeft, to, -perpendicular + toLeft, false, meshData);
 
+        CreateHorizontalMesh(subwall, from, perpendicular + fromRight, to, perpendicular + toRight, true, meshData);
+        CreateHorizontalMesh(subwall, from, perpendicular + fromRight, to, perpendicular + toRight, false, meshData);
+
         if (!otherTiles.Any(x =>
                 tile.TouchWith(x, out Vector2 selfDirection, out Vector2 otherDirection) &&
                 selfDirection == tile.Forward))
@@ -345,38 +348,64 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
         }
     }
 
-    private void CreateSideMesh(SubwallConfig subwall, Vector3 from, Vector3 fromDir, Vector3 to, Vector3 toDir,
-        bool lookForward, MeshData meshData)
+    private void CreateSideMesh(SubwallConfig subwall, Vector3 from, Vector3 fromDir, Vector3 to, Vector3 toDir, bool lookForward, MeshData meshData)
     {
         float step = 1f / (float)subwall.Steps;
         for (float percent = 0f; percent <= 1f; percent += step)
         {
             float nextPercent = percent + step;
 
-            GetSubwallPointsAtPercent(from, fromDir, to, toDir, percent, subwall, out Vector3 fromBottom,
-                out Vector3 toBottom);
-            GetSubwallPointsAtPercent(from, fromDir, to, toDir, nextPercent, subwall, out Vector3 fromTop,
-                out Vector3 toTop);
+            GetSubwallPointsAtPercent(from, fromDir, to, toDir, percent, subwall, out Vector3 fromBottom, out Vector3 toBottom);
+            GetSubwallPointsAtPercent(from, fromDir, to, toDir, nextPercent, subwall, out Vector3 fromTop, out Vector3 toTop);
 
             float topColorPercent = Mathf.Clamp01(fromTop.y / vertexColorsRefHeight);
             float bottomColorPercent = Mathf.Clamp01(fromBottom.y / vertexColorsRefHeight);
 
             PlaneData data = new PlaneData
             {
-                FromBottom = fromBottom,
-                ToBottom = toBottom,
-                FromTop = fromTop,
-                ToTop = toTop,
+                A = fromBottom,
+                B = toBottom,
+                C = fromTop,
+                D = toTop,
                 
-                FromBottomColor = subwall.VertexColorGradient.Evaluate(bottomColorPercent),
-                ToBottomColor = subwall.VertexColorGradient.Evaluate(bottomColorPercent),
-                FromTopColor = subwall.VertexColorGradient.Evaluate(topColorPercent),
-                ToTopColor = subwall.VertexColorGradient.Evaluate(topColorPercent)
+                AColor = subwall.VertexColorGradient.Evaluate(bottomColorPercent),
+                BColor = subwall.VertexColorGradient.Evaluate(bottomColorPercent),
+                CColor = subwall.VertexColorGradient.Evaluate(topColorPercent),
+                DColor = subwall.VertexColorGradient.Evaluate(topColorPercent)
             };
 
             bool smooth = percent > 0f && subwall.SmoothSteps;
             CreatePlaneMesh(data, lookForward, smooth, subwall.UVScale, meshData);
         }
+    }
+
+    private void CreateHorizontalMesh(SubwallConfig subwall, Vector3 from, Vector3 fromDir, Vector3 to, Vector3 toDir, bool top, MeshData meshData)
+    {
+        if (top && !subwall.DrawTop || !top && !subwall.DrawBottom)
+        {
+            return;
+        }
+
+        float percent = top ? 1f : 0f;
+        Color color = top ? subwall.TopColor : subwall.BottomColor;
+
+        GetSubwallPointsAtPercent(from, fromDir, to, toDir, percent, subwall, out Vector3 fromIn, out Vector3 toIn);
+        GetSubwallPointsAtPercent(from, -fromDir, to, -toDir, percent, subwall, out Vector3 fromOut, out Vector3 toOut);
+
+        PlaneData data = new PlaneData
+        {
+            A = fromIn,
+            B = toIn,
+            C = fromOut,
+            D = toOut,
+            
+            AColor = color,
+            BColor = color,
+            CColor = color,
+            DColor = color,
+        };
+
+        CreatePlaneMesh(data, top, false, subwall.UVScale, meshData);
     }
 
     private void GetSubwallPointsAtPercent(Vector3 from, Vector3 fromDir, Vector3 to, Vector3 toDir,
@@ -401,13 +430,13 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
 
         if (smooth)
         {
-            positions.AddRange(new[] { data.FromTop, data.ToTop });
-            colors.AddRange(new[] { data.FromTopColor, data.ToTopColor });
+            positions.AddRange(new[] { data.C, data.D});
+            colors.AddRange(new[] { data.CColor, data.DColor });
         }
         else
         {
-            positions.AddRange(new[] { data.FromBottom, data.ToBottom, data.FromTop, data.ToTop });
-            colors.AddRange(new[] { data.FromBottomColor, data.ToBottomColor, data.FromTopColor, data.ToTopColor });
+            positions.AddRange(new[] { data.A, data.B, data.C, data.D });
+            colors.AddRange(new[] { data.AColor, data.BColor, data.CColor, data.DColor });
         }
 
         positions.ForEach(position =>
@@ -415,7 +444,7 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
             meshData.Verts.Add(position);
             meshData.Colors.Add(colors[positions.IndexOf(position)]);
 
-            Vector2 uv = new Vector2(Mathf.Approximately(data.FromBottom.x, data.ToBottom.x)
+            Vector2 uv = new Vector2(Mathf.Approximately(data.A.x, data.B.x)
                 ? position.z
                 : position.x, position.y);
             
@@ -454,15 +483,15 @@ public class MapLayerEdgeMeshWall : MapLayerEdge
 
     private struct PlaneData
     {
-        public Vector3 FromBottom;
-        public Vector3 ToBottom;
-        public Vector3 FromTop;
-        public Vector3 ToTop;
+        public Vector3 A;
+        public Vector3 B;
+        public Vector3 C;
+        public Vector3 D;
         
-        public Color FromBottomColor;
-        public Color ToBottomColor;
-        public Color FromTopColor;
-        public Color ToTopColor;
+        public Color AColor;
+        public Color BColor;
+        public Color CColor;
+        public Color DColor;
     }
 
     #endregion
