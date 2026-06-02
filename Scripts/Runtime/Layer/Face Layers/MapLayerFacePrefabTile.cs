@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using DigitalOpus.MB.Core;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -46,9 +45,13 @@ public class MapLayerFacePrefabTile : MapLayerFace
         DrawEditorGUILine(() => bake = UnityEditor.EditorGUILayout.Toggle("Bake", bake));
         if (bake)
         {
+#if !MESH_BAKER
+            UnityEditor.EditorGUILayout.HelpBox("Mesh Baker package not found. Install it and the MESH_BAKER define will be set automatically.", UnityEditor.MessageType.Warning);
+#else
             DrawEditorGUILine(() => optimizeMesh = UnityEditor.EditorGUILayout.Toggle("Optimize Mesh", optimizeMesh));
             DrawEditorGUILine(() => convexCollider = UnityEditor.EditorGUILayout.Toggle("Convex Collider", convexCollider));
             DrawEditorGUILine(() => uvScale = UnityEditor.EditorGUILayout.FloatField("UV Scale", uvScale));
+#endif
         }
 
         if (bake)
@@ -93,17 +96,20 @@ public class MapLayerFacePrefabTile : MapLayerFace
         List<MeshRenderer> meshes = SpawnTiles(root.transform);
         if (bake)
         {
-            
+#if MESH_BAKER
             Quaternion rotation = transform.rotation;
             transform.rotation = Quaternion.identity;
-            
+
             root = Bake(root, meshes.Select(x => x.gameObject).ToList(), out Mesh mesh);
             transform.rotation = rotation;
-            
+
             if (useVertexColor)
             {
                 vertexColorer.ColorMesh(mesh);
             }
+#else
+            Debug.LogWarning($"[{Name}] Mesh Baker package is not installed. Bake step skipped.");
+#endif
         }
 
         root.isStatic = true;
@@ -146,15 +152,16 @@ public class MapLayerFacePrefabTile : MapLayerFace
         return meshRenderers;
     }
 
+#if MESH_BAKER
     private GameObject Bake(GameObject root, List<GameObject> objectsToBake, out Mesh outMesh)
     {
         MB3_MeshBaker baker = new GameObject("Baker").AddComponent<MB3_MeshBaker>();
-        
+
         baker.transform.position = root.transform.position;
         baker.transform.rotation = root.transform.rotation;
-        
+
         outMesh = null;
-        
+
         baker.ClearMesh();
         baker.meshCombiner.renderType = MB_RenderType.meshRenderer;
         baker.meshCombiner.doUV = true;
@@ -172,29 +179,29 @@ public class MapLayerFacePrefabTile : MapLayerFace
             baker.meshCombiner.pivotLocation = root.transform.position;
             baker.meshCombiner.optimizeAfterBake = optimizeMesh;
             baker.Apply();
-            
+
             MeshRenderer result = (MeshRenderer)baker.meshCombiner.targetRenderer;
             result.gameObject.name = Name;
             result.shadowCastingMode = ShadowCastingMode.On;
-            
+
             root.transform.DestroyAllChildren();
             Object.DestroyImmediate(baker.gameObject);
 
-            GameObject defaultParent = result.transform.parent.gameObject;  
+            GameObject defaultParent = result.transform.parent.gameObject;
             result.transform.SetParent(root.transform.parent);
-            
+
             Object.DestroyImmediate(defaultParent);
             Object.DestroyImmediate(root);
 
             Mesh mesh = result.GetComponent<MeshFilter>().sharedMesh;
-            
+
             Vector2[] uv = mesh.uv;
             for (int i = 0; i < uv.Length; i++)
             {
                 uv[i] *= uvScale;
             }
             mesh.uv = uv;
-            
+
             SaveMesh(mesh);
             outMesh = mesh;
 
@@ -207,4 +214,5 @@ public class MapLayerFacePrefabTile : MapLayerFace
 
         return root;
     }
+#endif
 }
